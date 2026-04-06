@@ -33,7 +33,6 @@
             background: #007bff;
             color: white;
             cursor: pointer;
-            user-select: none;
         }
 
         tr:nth-child(even) {
@@ -48,14 +47,11 @@
             background: white;
             padding: 15px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         input {
             padding: 8px;
             margin: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
         }
 
         button {
@@ -64,11 +60,6 @@
             background: #28a745;
             color: white;
             border: none;
-            border-radius: 4px;
-        }
-
-        button:hover {
-            background: #218838;
         }
     </style>
 </head>
@@ -81,7 +72,7 @@
         <thead>
             <tr>
                 <th>STT</th>
-                <th id="sort-name">Tên sản phẩm <span id="sort-icon">▲▼</span></th>
+                <th id="sort-name">Tên sản phẩm ▲▼</th>
                 <th>Danh mục</th>
                 <th>Đơn giá</th>
                 <th>Số lượng</th>
@@ -91,7 +82,7 @@
     </table>
 
     <div class="form">
-        <h3>Thêm sản phẩm mới</h3>
+        <h3>Thêm sản phẩm</h3>
         <input id="input-name" placeholder="Tên sản phẩm">
         <input id="input-category" placeholder="Danh mục">
         <input id="input-price" type="number" placeholder="Đơn giá">
@@ -104,17 +95,15 @@
         let sortAsc = true;
         const tbody = document.querySelector("#product-table tbody");
 
-        function loadData() {
-            const xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    productList = JSON.parse(xhr.responseText);
-                    renderTable(productList);
-                }
-            };
-            xhr.open('GET', 'products.json');
-            xhr.send();
-        }
+        const xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                productList = JSON.parse(xhr.responseText);
+                renderTable(productList);
+            }
+        };
+        xhr.open('GET', 'products.json');
+        xhr.send();
 
         function renderTable(data) {
             tbody.innerHTML = "";
@@ -124,22 +113,24 @@
                     <td>${index + 1}</td>
                     <td>${p.name}</td>
                     <td>${p.category || ""}</td>
-                    <td>${p.price.toLocaleString()}</td>
+                    <td>${p.price}</td>
                     <td>${p.quantity}</td>
-                </tr>
-            `;
-                tbody.insertAdjacentHTML('beforeend', row);
+                </tr>`;
+                tbody.innerHTML += row;
             });
         }
 
         document.getElementById("sort-name").addEventListener("click", () => {
             productList.sort((a, b) => {
-                return sortAsc
-                    ? a.name.localeCompare(b.name)
-                    : b.name.localeCompare(a.name);
+                if (sortAsc) {
+                    return a.name.localeCompare(b.name);
+                } else {
+                    return b.name.localeCompare(a.name);
+                }
             });
 
-            document.getElementById("sort-icon").textContent = sortAsc ? " ▲" : " ▼";
+            document.getElementById("sort-name").textContent = "Tên sản phẩm " + (sortAsc ? "▲" : "▼");
+
             sortAsc = !sortAsc;
             renderTable(productList);
         });
@@ -150,16 +141,8 @@
             const price = parseFloat(document.getElementById("input-price").value);
             const quantity = parseInt(document.getElementById("input-quantity").value);
 
-            if (name.length < 3) {
-                alert("Tên sản phẩm phải có ít nhất 3 ký tự!");
-                return;
-            }
-            if (isNaN(price) || price <= 0) {
-                alert("Đơn giá phải là số dương!");
-                return;
-            }
-            if (isNaN(quantity) || quantity < 1) {
-                alert("Số lượng phải lớn hơn hoặc bằng 1!");
+            if (name.length < 3 || isNaN(price) || price <= 0 || isNaN(quantity) || quantity < 1) {
+                alert("Vui lòng nhập đúng định dạng dữ liệu!");
                 return;
             }
 
@@ -179,10 +162,7 @@
             document.getElementById("input-price").value = "";
             document.getElementById("input-quantity").value = "";
         });
-
-        loadData();
     </script>
-
 </body>
 
 </html>
